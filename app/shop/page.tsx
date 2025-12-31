@@ -6,7 +6,13 @@ import { SiteFooter } from "@/components/site-footer"
 import { ProductCard } from "@/components/product-card"
 import { products } from "@/lib/data"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { SlidersHorizontal } from "lucide-react"
@@ -20,63 +26,90 @@ export default function ShopPage() {
   const allSizes = Array.from(new Set(products.flatMap((p) => p.sizes)))
 
   const filteredProducts = products.filter((product) => {
-    const priceMatch = product.price >= priceRange[0] && product.price <= priceRange[1]
-    const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(product.category)
-    const sizeMatch = selectedSizes.length === 0 || product.sizes.some((size) => selectedSizes.includes(size))
+    const priceMatch =
+      product.price >= priceRange[0] &&
+      product.price <= priceRange[1]
+    const categoryMatch =
+      selectedCategories.length === 0 ||
+      selectedCategories.includes(product.category)
+    const sizeMatch =
+      selectedSizes.length === 0 ||
+      product.sizes.some((size) => selectedSizes.includes(size))
+
     return priceMatch && categoryMatch && sizeMatch
   })
 
+  /* ================= FILTER UI ================= */
   const FilterContent = () => (
-    <div className="space-y-8">
-      {/* Category Filter */}
+    <div className="space-y-12 text-sm uppercase tracking-widest text-gray-400">
+      {/* Category */}
       <div>
-        <h3 className="font-medium mb-4">Category</h3>
-        <div className="space-y-3">
+        <h3 className="text-white mb-6">Category</h3>
+        <div className="space-y-4">
           {categories.map((category) => (
-            <label key={category} className="flex items-center space-x-2 cursor-pointer">
+            <label
+              key={category}
+              className="flex items-center gap-3 cursor-pointer"
+            >
               <Checkbox
                 checked={selectedCategories.includes(category)}
                 onCheckedChange={(checked) => {
                   if (checked) {
-                    setSelectedCategories([...selectedCategories, category])
+                    setSelectedCategories([
+                      ...selectedCategories,
+                      category,
+                    ])
                   } else {
-                    setSelectedCategories(selectedCategories.filter((c) => c !== category))
+                    setSelectedCategories(
+                      selectedCategories.filter((c) => c !== category)
+                    )
                   }
                 }}
               />
-              <span className="text-sm">{category}</span>
+              <span className="hover:text-white transition-colors">
+                {category}
+              </span>
             </label>
           ))}
         </div>
       </div>
 
-      {/* Price Filter */}
+      {/* Price */}
       <div>
-        <h3 className="font-medium mb-4">
-          Price Range: ${priceRange[0]} - ${priceRange[1]}
+        <h3 className="text-white mb-6">
+          Price — ${priceRange[0]} to ${priceRange[1]}
         </h3>
-        <Slider value={priceRange} onValueChange={setPriceRange} min={0} max={500} step={10} className="mt-2" />
+        <Slider
+          value={priceRange}
+          onValueChange={setPriceRange}
+          min={0}
+          max={500}
+          step={10}
+        />
       </div>
 
-      {/* Size Filter */}
+      {/* Size */}
       <div>
-        <h3 className="font-medium mb-4">Size</h3>
-        <div className="flex flex-wrap gap-2">
+        <h3 className="text-white mb-6">Size</h3>
+        <div className="flex flex-wrap gap-3">
           {allSizes.map((size) => (
-            <Button
+            <button
               key={size}
-              variant={selectedSizes.includes(size) ? "default" : "outline"}
-              size="sm"
               onClick={() => {
-                if (selectedSizes.includes(size)) {
-                  setSelectedSizes(selectedSizes.filter((s) => s !== size))
-                } else {
-                  setSelectedSizes([...selectedSizes, size])
-                }
+                setSelectedSizes((prev) =>
+                  prev.includes(size)
+                    ? prev.filter((s) => s !== size)
+                    : [...prev, size]
+                )
               }}
+              className={`px-4 py-2 border text-xs tracking-widest transition-all ${
+                selectedSizes.includes(size)
+                  ? "border-white text-white"
+                  : "border-white/20 text-gray-400 hover:text-white"
+              }`}
             >
               {size}
-            </Button>
+            </button>
           ))}
         </div>
       </div>
@@ -84,73 +117,91 @@ export default function ShopPage() {
   )
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="bg-[#030303] text-[#e8e8e3] min-h-screen">
       <SiteHeader />
-      <main className="flex-1">
-        <div className="container py-12">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="font-serif text-4xl font-light tracking-tight mb-2">Shop All</h1>
-              <p className="text-muted-foreground">
-                {filteredProducts.length} {filteredProducts.length === 1 ? "product" : "products"}
-              </p>
+
+      {/* ================= PAGE HEADER ================= */}
+      <section className="pt-48 pb-24 text-center px-6">
+        <p className="uppercase tracking-[0.5em] text-xs text-gray-400 mb-6">
+          The Collection
+        </p>
+        <h1 className="text-6xl md:text-7xl font-serif font-light mb-4">
+          Shop All
+        </h1>
+        <p className="text-gray-500 text-sm tracking-widest">
+          {filteredProducts.length} pieces available
+        </p>
+      </section>
+
+      {/* ================= CONTENT ================= */}
+      <main className="px-6 md:px-12 pb-32">
+        <div className="flex gap-16">
+          {/* Desktop Filters */}
+          <aside className="hidden lg:block w-72 shrink-0">
+            <div className="sticky top-32">
+              <FilterContent />
             </div>
+          </aside>
 
-            {/* Mobile Filter Button */}
-            <Sheet>
-              <SheetTrigger asChild className="lg:hidden">
-                <Button variant="outline" size="sm">
-                  <SlidersHorizontal className="h-4 w-4 mr-2" />
-                  Filters
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[300px]">
-                <SheetHeader>
-                  <SheetTitle>Filters</SheetTitle>
-                </SheetHeader>
-                <div className="mt-8">
-                  <FilterContent />
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-
-          <div className="flex gap-12">
-            {/* Desktop Sidebar */}
-            <aside className="hidden lg:block w-64 shrink-0">
-              <div className="sticky top-24">
-                <FilterContent />
-              </div>
-            </aside>
-
-            {/* Products Grid */}
-            <div className="flex-1">
-              {filteredProducts.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
-                  {filteredProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-20">
-                  <p className="text-muted-foreground">No products match your filters</p>
+          {/* Products */}
+          <div className="flex-1">
+            {/* Mobile Filter */}
+            <div className="flex justify-end mb-10 lg:hidden">
+              <Sheet>
+                <SheetTrigger asChild>
                   <Button
                     variant="outline"
-                    className="mt-4 bg-transparent"
-                    onClick={() => {
-                      setPriceRange([0, 500])
-                      setSelectedCategories([])
-                      setSelectedSizes([])
-                    }}
+                    className="border-white/20 text-white"
                   >
-                    Clear Filters
+                    <SlidersHorizontal className="w-4 h-4 mr-2" />
+                    Filters
                   </Button>
-                </div>
-              )}
+                </SheetTrigger>
+                <SheetContent
+                  side="left"
+                  className="bg-[#030303] border-white/10"
+                >
+                  <SheetHeader>
+                    <SheetTitle className="text-white tracking-widest uppercase">
+                      Filters
+                    </SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-12">
+                    <FilterContent />
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
+
+            {/* Grid */}
+            {filteredProducts.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-10">
+                {filteredProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-32">
+                <p className="uppercase tracking-widest text-gray-500 mb-6">
+                  No matching pieces found
+                </p>
+                <Button
+                  variant="outline"
+                  className="border-white/20 text-white"
+                  onClick={() => {
+                    setPriceRange([0, 500])
+                    setSelectedCategories([])
+                    setSelectedSizes([])
+                  }}
+                >
+                  Reset Filters
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </main>
+
       <SiteFooter />
     </div>
   )
