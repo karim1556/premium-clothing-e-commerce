@@ -7,7 +7,7 @@ export function SiteFooter() {
     <footer className="bg-[#050505] pt-32 pb-12 px-6 md:px-12 border-t border-white/5 relative overflow-hidden">
       {/* Huge Background Text */}
       <h1 className="text-[20vw] font-serif font-bold text-[#0a0a0a] absolute bottom-0 left-1/2 -translate-x-1/2 pointer-events-none leading-none">
-        NOIR
+        U.S ATELIER
       </h1>
 
       {/* Content */}
@@ -53,7 +53,7 @@ export function SiteFooter() {
 
       {/* Bottom Bar */}
       <div className="relative z-10 flex justify-between text-[10px] uppercase tracking-widest text-gray-700">
-        <span>&copy; 2025 NOIR Maison</span>
+        <span>&copy; 2025 U.S ATELIER Maison</span>
         <span>Privacy & Cookies</span>
       </div>
     </footer>

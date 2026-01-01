@@ -1,7 +1,15 @@
+"use client"
+
 import type React from "react"
-import { SiteHeader } from "@/components/site-header"
 import Link from "next/link"
-import { LayoutDashboard, Package, ShoppingCart, Users, CreditCard, FolderOpen } from "lucide-react"
+import {
+  LayoutDashboard,
+  ShoppingCart,
+  Package,
+  FolderOpen,
+  CreditCard,
+  Users,
+} from "lucide-react"
 
 export default function AdminLayout({
   children,
@@ -9,90 +17,52 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <SiteHeader />
-      <div className="flex">
-        <aside className="hidden lg:flex lg:flex-col w-64 border-r border-neutral-200 bg-white min-h-[calc(100vh-64px)] sticky top-16">
-          <nav className="flex-1 p-6 space-y-1">
-            <Link
-              href="/admin"
-              className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-neutral-100 transition-colors"
-            >
-              <LayoutDashboard className="w-5 h-5" />
-              Dashboard
-            </Link>
-            <Link
-              href="/admin/orders"
-              className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-neutral-100 transition-colors"
-            >
-              <ShoppingCart className="w-5 h-5" />
-              Orders
-            </Link>
-            <Link
-              href="/admin/products"
-              className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-neutral-100 transition-colors"
-            >
-              <Package className="w-5 h-5" />
-              Products
-            </Link>
-            <Link
-              href="/admin/categories"
-              className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-neutral-100 transition-colors"
-            >
-              <FolderOpen className="w-5 h-5" />
-              Categories
-            </Link>
-            <Link
-              href="/admin/payments"
-              className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-neutral-100 transition-colors"
-            >
-              <CreditCard className="w-5 h-5" />
-              Payments
-            </Link>
-            <Link
-              href="/admin/customers"
-              className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg hover:bg-neutral-100 transition-colors"
-            >
-              <Users className="w-5 h-5" />
-              Customers
-            </Link>
-          </nav>
-          <div className="p-6 border-t border-neutral-200">
-            <p className="text-xs text-neutral-500">Admin Panel v1.0</p>
-          </div>
-        </aside>
+    <div className="bg-[#030303] text-[#e8e8e3] min-h-screen flex">
+      {/* SIDEBAR */}
+      <aside className="hidden lg:flex w-72 flex-col border-r border-white/10 px-10 py-12">
+        <p className="uppercase tracking-[0.4em] text-xs text-gray-500 mb-16">
+          Admin
+        </p>
 
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-neutral-200 px-2 py-3">
-          <nav className="flex items-center justify-around">
-            <Link href="/admin" className="flex flex-col items-center gap-1 text-xs">
-              <LayoutDashboard className="w-5 h-5" />
-              <span>Dashboard</span>
+        <nav className="space-y-6 text-sm">
+          {[
+            ["/admin", "Dashboard", LayoutDashboard] as const,
+            ["/admin/orders", "Orders", ShoppingCart] as const,
+            ["/admin/products", "Products", Package] as const,
+            ["/admin/categories", "Categories", FolderOpen] as const,
+            ["/admin/payments", "Payments", CreditCard] as const,
+            ["/admin/customers", "Customers", Users] as const,
+          ].map(([href, label, Icon], index) => (
+            <Link
+              key={index}
+              href={href}
+              className="flex items-center gap-4 tracking-widest text-gray-400 hover:text-white transition-colors"
+            >
+              <Icon className="w-4 h-4" />
+              {label}
             </Link>
-            <Link href="/admin/orders" className="flex flex-col items-center gap-1 text-xs">
-              <ShoppingCart className="w-5 h-5" />
-              <span>Orders</span>
-            </Link>
-            <Link href="/admin/products" className="flex flex-col items-center gap-1 text-xs">
-              <Package className="w-5 h-5" />
-              <span>Products</span>
-            </Link>
-            <Link href="/admin/categories" className="flex flex-col items-center gap-1 text-xs">
-              <FolderOpen className="w-5 h-5" />
-              <span>Categories</span>
-            </Link>
-            <Link href="/admin/payments" className="flex flex-col items-center gap-1 text-xs">
-              <CreditCard className="w-5 h-5" />
-              <span>Payments</span>
-            </Link>
-            <Link href="/admin/customers" className="flex flex-col items-center gap-1 text-xs">
-              <Users className="w-5 h-5" />
-              <span>Customers</span>
-            </Link>
-          </nav>
+          ))}
+        </nav>
+
+        <div className="mt-auto pt-10 border-t border-white/10 text-xs tracking-widest text-gray-500">
+          Admin Panel
         </div>
+      </aside>
 
-        <main className="flex-1 p-6 lg:p-8 pb-24 lg:pb-8">{children}</main>
+      {/* MOBILE NAV */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#030303] border-t border-white/10 z-50">
+        <nav className="flex justify-around py-4 text-xs tracking-widest">
+          <Link href="/admin">Dashboard</Link>
+          <Link href="/admin/orders">Orders</Link>
+          <Link href="/admin/products">Products</Link>
+          <Link href="/admin/payments">Payments</Link>
+        </nav>
       </div>
+
+      {/* CONTENT */}
+      <main className="flex-1 pb-24 lg:pb-0">
+        {children}
+      </main>
     </div>
   )
 }

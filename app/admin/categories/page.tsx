@@ -1,139 +1,171 @@
 "use client"
 
 import { useState } from "react"
-import { customCategories, addCustomCategory, deleteCustomCategory, products, updateProduct } from "@/lib/data"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  customCategories,
+  addCustomCategory,
+  deleteCustomCategory,
+  products,
+  updateProduct,
+} from "@/lib/data"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Trash2, FolderOpen } from "lucide-react"
+import { Plus, Trash2 } from "lucide-react"
 import Link from "next/link"
 
 export default function CategoriesPage() {
   const [newCategoryName, setNewCategoryName] = useState("")
 
   const handleAddCategory = () => {
-    if (newCategoryName.trim()) {
-      addCustomCategory(newCategoryName.trim())
-      setNewCategoryName("")
-    }
+    if (!newCategoryName.trim()) return
+    addCustomCategory(newCategoryName.trim())
+    setNewCategoryName("")
   }
 
   const handleDeleteCategory = (category: string) => {
-    if (confirm(`Are you sure you want to delete the "${category}" category?`)) {
-      deleteCustomCategory(category)
+    if (!confirm(`Delete category "${category}"? This cannot be undone.`))
+      return
 
-      // Remove category from all products
-      products.forEach((product) => {
-        if (product.customCategories?.includes(category)) {
-          updateProduct(product.id, {
-            customCategories: product.customCategories.filter((c) => c !== category),
-          })
-        }
-      })
-    }
+    deleteCustomCategory(category)
+
+    products.forEach((product) => {
+      if (product.customCategories?.includes(category)) {
+        updateProduct(product.id, {
+          customCategories: product.customCategories.filter(
+            (c) => c !== category
+          ),
+        })
+      }
+    })
   }
 
-  const getCategoryProductCount = (category: string) => {
-    return products.filter((p) => p.customCategories?.includes(category)).length
-  }
+  const getCategoryProductCount = (category: string) =>
+    products.filter((p) =>
+      p.customCategories?.includes(category)
+    ).length
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Categories Management</h1>
-        <p className="text-neutral-600 mt-1">Create and manage custom product categories</p>
+    <div className="bg-[#030303] text-[#e8e8e3] min-h-screen px-8 py-16">
+      {/* ================= HEADER ================= */}
+      <div className="max-w-[1400px] mx-auto mb-20">
+        <p className="uppercase tracking-[0.5em] text-xs text-gray-500 mb-4">
+          Admin
+        </p>
+        <h1 className="font-serif text-5xl font-light">
+          Categories
+        </h1>
+        <p className="mt-4 text-sm tracking-widest text-gray-500 max-w-xl">
+          Create, organize, and maintain custom product groupings.
+        </p>
       </div>
 
-      {/* Add New Category */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Add New Category</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4">
+      <div className="max-w-[1400px] mx-auto space-y-24">
+        {/* ================= ADD CATEGORY ================= */}
+        <section className="border border-white/10 p-10">
+          <h2 className="uppercase tracking-widest text-xs text-gray-400 mb-8">
+            Create New Category
+          </h2>
+
+          <div className="flex gap-6 max-w-xl">
             <Input
               value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
-              placeholder="Category name (e.g., Spring Collection)"
-              onKeyPress={(e) => {
-                if (e.key === "Enter") {
-                  handleAddCategory()
-                }
+              onChange={(e) =>
+                setNewCategoryName(e.target.value)
+              }
+              placeholder="Category name"
+              className="bg-transparent border-white/20 text-white placeholder:text-gray-600"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleAddCategory()
               }}
             />
-            <Button onClick={handleAddCategory} className="inline-flex items-center gap-2 whitespace-nowrap">
-              <Plus className="w-4 h-4" />
-              Add Category
+
+            <Button
+              onClick={handleAddCategory}
+              className="border border-white/40 bg-transparent uppercase tracking-widest text-xs hover:bg-white hover:text-black transition-all"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </section>
 
-      {/* Existing Categories */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All Categories ({customCategories.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {/* ================= CATEGORY LIST ================= */}
+        <section>
+          <h2 className="uppercase tracking-widest text-xs text-gray-400 mb-12">
+            Existing Categories ({customCategories.length})
+          </h2>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {customCategories.map((category) => (
               <div
                 key={category}
-                className="flex items-center justify-between p-4 border border-neutral-200 rounded-lg hover:border-neutral-300 transition-colors"
+                className="border border-white/10 p-8 flex flex-col justify-between"
               >
-                <div className="flex items-center gap-3">
-                  <FolderOpen className="w-5 h-5 text-neutral-400" />
-                  <div>
-                    <p className="font-medium">{category}</p>
-                    <p className="text-sm text-neutral-600">{getCategoryProductCount(category)} products</p>
-                  </div>
+                <div>
+                  <h3 className="font-serif text-2xl font-light mb-2">
+                    {category}
+                  </h3>
+                  <p className="text-xs tracking-widest text-gray-500">
+                    {getCategoryProductCount(category)} PRODUCTS
+                  </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Link href={`/collections/${category.toLowerCase().replace(/\s+/g, "-")}`}>
-                    <Button variant="ghost" size="sm">
-                      View
-                    </Button>
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteCategory(category)}
-                    className="text-red-600 hover:text-red-700"
+
+                <div className="flex items-center gap-6 mt-8">
+                  <Link
+                    href={`/collections/${category
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`}
+                    className="uppercase tracking-widest text-xs text-gray-400 hover:text-white transition-colors"
                   >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                    View
+                  </Link>
+
+                  <button
+                    onClick={() =>
+                      handleDeleteCategory(category)
+                    }
+                    className="uppercase tracking-widest text-xs text-red-500 hover:text-red-400 transition-colors ml-auto"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </section>
 
-      {/* Default Categories Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Product Tags</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <p className="text-sm text-neutral-600">
-              In addition to custom categories, you can mark products with the following tags directly from the Products
-              page:
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="default">Featured</Badge>
-              <Badge variant="default">New Arrival</Badge>
-              <Badge variant="default">Bestseller</Badge>
-            </div>
-            <Link href="/admin/products">
-              <Button variant="outline" className="mt-4 bg-transparent">
-                Go to Products
-              </Button>
-            </Link>
+        {/* ================= TAG INFO ================= */}
+        <section className="border border-white/10 p-10 max-w-3xl">
+          <h2 className="uppercase tracking-widest text-xs text-gray-400 mb-6">
+            Product Tags
+          </h2>
+
+          <p className="text-sm tracking-widest text-gray-500 mb-8">
+            These system tags can be applied directly to products.
+          </p>
+
+          <div className="flex gap-3 mb-8">
+            <Badge className="bg-white text-black">
+              Featured
+            </Badge>
+            <Badge className="bg-white text-black">
+              New Arrival
+            </Badge>
+            <Badge className="bg-white text-black">
+              Bestseller
+            </Badge>
           </div>
-        </CardContent>
-      </Card>
+
+          <Link
+            href="/admin/products"
+            className="inline-block border border-white/30 px-8 py-4 uppercase tracking-widest text-xs hover:bg-white hover:text-black transition-all"
+          >
+            Go to Products
+          </Link>
+        </section>
+      </div>
     </div>
   )
 }

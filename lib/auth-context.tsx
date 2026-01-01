@@ -12,6 +12,7 @@ type User = {
 type AuthContextType = {
   user: User | null
   login: (email: string, password: string) => Promise<{ success: boolean; user?: User }>
+  signup: (email: string, password: string) => Promise<{ success: boolean; user?: User; message?: string }>
   logout: () => void
   isAuthenticated: boolean
   isAdmin: boolean
@@ -46,6 +47,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { success: false }
   }
 
+  const signup = async (
+    email: string,
+    password: string
+  ): Promise<{ success: boolean; user?: User; message?: string }> => {
+    // Very small client-side mock of signup. In production, call an API.
+    if (!email || !password) {
+      return { success: false, message: "Email and password are required" }
+    }
+
+    if (password.length < 6) {
+      return { success: false, message: "Password must be at least 6 characters" }
+    }
+
+    // Simple uniqueness check against the two mocked users
+    const existingEmails = ["admin@atelier.com", "user@example.com"]
+    if (existingEmails.includes(email)) {
+      return { success: false, message: "An account with this email already exists" }
+    }
+
+    const newUser: User = {
+      id: Date.now().toString(),
+      email,
+      name: email.split("@")[0],
+      role: "user",
+    }
+
+    setUser(newUser)
+    localStorage.setItem("user", JSON.stringify(newUser))
+    return { success: true, user: newUser }
+  }
+
   const logout = () => {
     setUser(null)
     localStorage.removeItem("user")
@@ -56,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         login,
+        signup,
         logout,
         isAuthenticated: !!user,
         isAdmin: user?.role === "admin",

@@ -1,259 +1,142 @@
 "use client"
 
 import { orders, products } from "@/lib/data"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { DollarSign, Package, ShoppingCart, TrendingUp, CreditCard, Users, ArrowUp } from "lucide-react"
 import Link from "next/link"
-import { Badge } from "@/components/ui/badge"
 
 export default function AdminDashboard() {
-  // Calculate stats
-  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0)
+  const revenue = orders.reduce((s, o) => s + o.total, 0)
   const totalOrders = orders.length
-  const pendingOrders = orders.filter((o) => o.status === "pending").length
-  const totalProducts = products.length
-  const lowStock = products.filter((p) => !p.inStock).length
+  const pendingOrders = orders.filter(o => o.status === "pending").length
+  const customers = new Set(orders.map(o => o.customerId)).size
+  const avgOrder = revenue / totalOrders || 0
 
-  const completedPayments = orders.filter((o) => o.paymentStatus === "completed").length
-  const pendingPayments = orders.filter((o) => o.paymentStatus === "pending").length
-  const failedPayments = orders.filter((o) => o.paymentStatus === "failed").length
+  const recentOrders = orders.slice(0, 6)
 
-  // Calculate conversion and growth metrics
-  const avgOrderValue = totalRevenue / totalOrders
-  const uniqueCustomers = new Set(orders.map((o) => o.customerId)).size
-
-  // Recent orders
-  const recentOrders = orders.slice(0, 5)
-
-  const productSales = orders.reduce(
-    (acc, order) => {
-      order.items.forEach((item) => {
-        acc[item.productId] = (acc[item.productId] || 0) + item.quantity
-      })
-      return acc
-    },
-    {} as Record<string, number>,
-  )
+  const productSales = orders.reduce((acc, o) => {
+    o.items.forEach(i => {
+      acc[i.productId] = (acc[i.productId] || 0) + i.quantity
+    })
+    return acc
+  }, {} as Record<string, number>)
 
   const topProducts = Object.entries(productSales)
-    .map(([id, quantity]) => ({
-      product: products.find((p) => p.id === id),
-      quantity,
+    .map(([id, qty]) => ({
+      product: products.find(p => p.id === id),
+      qty,
     }))
-    .filter((item) => item.product)
-    .sort((a, b) => b.quantity - a.quantity)
+    .filter(p => p.product)
     .slice(0, 5)
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-neutral-600 mt-1">Overview of your store performance</p>
+    <div className="bg-[#030303] text-[#e8e8e3] min-h-screen px-8 py-16">
+      {/* HEADER */}
+      <div className="max-w-[1400px] mx-auto mb-20">
+        <p className="uppercase tracking-[0.5em] text-xs text-gray-500 mb-4">
+          Admin Overview
+        </p>
+        <h1 className="font-serif text-5xl font-light">
+          Dashboard
+        </h1>
+        <p className="mt-4 text-sm tracking-widest text-gray-500">
+          Store performance at a glance.
+        </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-600">Total Revenue</CardTitle>
-            <DollarSign className="w-4 h-4 text-neutral-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
-            <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-              <ArrowUp className="w-3 h-3" />
-              +12% from last month
+      {/* METRICS */}
+      <div className="max-w-[1400px] mx-auto grid md:grid-cols-5 gap-8 mb-24">
+        {[
+          ["Revenue", `$${revenue.toLocaleString()}`],
+          ["Orders", totalOrders],
+          ["Pending", pendingOrders],
+          ["Customers", customers],
+          ["Avg Order", `$${avgOrder.toFixed(2)}`],
+        ].map(([label, value]) => (
+          <div key={label} className="border border-white/10 p-8">
+            <p className="uppercase tracking-widest text-xs text-gray-500 mb-4">
+              {label}
             </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-600">Total Orders</CardTitle>
-            <ShoppingCart className="w-4 h-4 text-neutral-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalOrders}</div>
-            <p className="text-xs text-neutral-600 mt-1">{pendingOrders} pending</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-600">Products</CardTitle>
-            <Package className="w-4 h-4 text-neutral-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalProducts}</div>
-            <p className="text-xs text-neutral-600 mt-1">
-              {products.filter((p) => p.inStock).length} in stock, {lowStock} low
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-600">Avg Order Value</CardTitle>
-            <TrendingUp className="w-4 h-4 text-neutral-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${avgOrderValue.toFixed(2)}</div>
-            <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-              <ArrowUp className="w-3 h-3" />
-              +0.5% from last week
-            </p>
-          </CardContent>
-        </Card>
+            <p className="text-3xl font-light">{value}</p>
+          </div>
+        ))}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-600">Completed Payments</CardTitle>
-            <CreditCard className="w-4 h-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{completedPayments}</div>
-            <p className="text-xs text-neutral-600 mt-1">
-              $
-              {orders
-                .filter((o) => o.paymentStatus === "completed")
-                .reduce((sum, o) => sum + o.total, 0)
-                .toLocaleString()}
-            </p>
-          </CardContent>
-        </Card>
+      {/* GRID */}
+      <div className="max-w-[1400px] mx-auto grid lg:grid-cols-2 gap-16">
+        {/* RECENT ORDERS */}
+        <div className="border border-white/10 p-10">
+          <div className="flex justify-between items-center mb-10">
+            <h2 className="uppercase tracking-widest text-xs text-gray-400">
+              Recent Orders
+            </h2>
+            <Link
+              href="/admin/orders"
+              className="uppercase tracking-widest text-xs text-gray-500 hover:text-white"
+            >
+              View All
+            </Link>
+          </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-600">Pending Payments</CardTitle>
-            <CreditCard className="w-4 h-4 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingPayments}</div>
-            <p className="text-xs text-neutral-600 mt-1">
-              $
-              {orders
-                .filter((o) => o.paymentStatus === "pending")
-                .reduce((sum, o) => sum + o.total, 0)
-                .toLocaleString()}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-600">Failed Payments</CardTitle>
-            <CreditCard className="w-4 h-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{failedPayments}</div>
-            <p className="text-xs text-red-600 mt-1">Requires attention</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-600">Total Customers</CardTitle>
-            <Users className="w-4 h-4 text-neutral-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{uniqueCustomers}</div>
-            <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-              <ArrowUp className="w-3 h-3" />
-              +8 this week
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Recent Orders */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Recent Orders</CardTitle>
-              <Link href="/admin/orders" className="text-sm font-medium hover:underline">
-                View all
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentOrders.map((order) => (
-                <div
-                  key={order.id}
-                  className="flex items-center justify-between py-3 border-b border-neutral-100 last:border-0"
-                >
-                  <div className="space-y-1">
-                    <p className="font-medium">{order.id}</p>
-                    <p className="text-sm text-neutral-600">{order.customerName}</p>
-                  </div>
-                  <div className="text-right space-y-1">
-                    <p className="font-medium">${order.total}</p>
-                    <div className="flex gap-2">
-                      <Badge
-                        variant={
-                          order.status === "delivered"
-                            ? "default"
-                            : order.status === "shipped"
-                              ? "secondary"
-                              : "outline"
-                        }
-                      >
-                        {order.status}
-                      </Badge>
-                      <Badge
-                        variant={
-                          order.paymentStatus === "completed"
-                            ? "default"
-                            : order.paymentStatus === "pending"
-                              ? "outline"
-                              : "destructive"
-                        }
-                      >
-                        {order.paymentStatus}
-                      </Badge>
-                    </div>
-                  </div>
+          <div className="space-y-6">
+            {recentOrders.map(o => (
+              <div
+                key={o.id}
+                className="flex justify-between border-b border-white/5 pb-4"
+              >
+                <div>
+                  <p className="font-medium">{o.id}</p>
+                  <p className="text-xs tracking-widest text-gray-500">
+                    {o.customerName}
+                  </p>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Top Selling Products</CardTitle>
-              <Link href="/admin/products" className="text-sm font-medium hover:underline">
-                View all
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {topProducts.map((item, index) => (
-                <div
-                  key={item.product?.id}
-                  className="flex items-center gap-4 py-3 border-b border-neutral-100 last:border-0"
-                >
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-100 font-semibold text-sm">
-                    {index + 1}
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <p className="font-medium">{item.product?.name}</p>
-                    <p className="text-sm text-neutral-600">{item.product?.category}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">{item.quantity} sold</p>
-                    <p className="text-sm text-neutral-600">${item.product?.price}</p>
-                  </div>
+                <div className="text-right">
+                  <p className="font-medium">${o.total}</p>
+                  <p className="text-xs tracking-widest text-gray-500 uppercase">
+                    {o.status}
+                  </p>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* TOP PRODUCTS */}
+        <div className="border border-white/10 p-10">
+          <div className="flex justify-between items-center mb-10">
+            <h2 className="uppercase tracking-widest text-xs text-gray-400">
+              Top Products
+            </h2>
+            <Link
+              href="/admin/products"
+              className="uppercase tracking-widest text-xs text-gray-500 hover:text-white"
+            >
+              View All
+            </Link>
+          </div>
+
+          <div className="space-y-6">
+            {topProducts.map((p, i) => (
+              <div
+                key={p.product!.id}
+                className="flex justify-between border-b border-white/5 pb-4"
+              >
+                <div>
+                  <p className="font-medium">
+                    {i + 1}. {p.product!.name}
+                  </p>
+                  <p className="text-xs tracking-widest text-gray-500">
+                    {p.product!.category}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-medium">{p.qty} sold</p>
+                  <p className="text-xs tracking-widest text-gray-500">
+                    ${p.product!.price}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   )

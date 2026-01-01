@@ -55,7 +55,7 @@ export function Preloader() {
     >
       <div className="text-center">
         <h1 className="text-4xl font-serif tracking-widest mb-4">
-          NOIR
+          U.S ATELIER
         </h1>
 
         <div className="w-48 h-[1px] bg-gray-800 overflow-hidden relative">

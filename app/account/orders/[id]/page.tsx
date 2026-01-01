@@ -1,109 +1,134 @@
+"use client"
+
 import { use } from "react"
+import { notFound } from "next/navigation"
+import Link from "next/link"
+
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { orders } from "@/lib/data"
-import Link from "next/link"
-import { notFound } from "next/navigation"
 
-export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function OrderDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
   const { id } = use(params)
   const order = orders.find((o) => o.id === id)
 
-  if (!order) {
-    notFound()
-  }
+  if (!order) notFound()
 
-  const getStatusColor = (status: string) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case "delivered":
-        return "bg-foreground text-background"
       case "shipped":
-        return "bg-foreground text-background"
-      case "processing":
-        return "bg-muted text-foreground"
-      case "pending":
-        return "bg-muted text-foreground"
+        return "border-white text-white"
       default:
-        return "bg-muted text-foreground"
+        return "border-white/20 text-gray-400"
     }
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="bg-[#030303] text-[#e8e8e3] min-h-screen">
       <SiteHeader />
-      <main className="flex-1">
-        <div className="container py-12">
-          <div className="mb-8">
-            <Link
-              href="/account/orders"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+
+      <main className="pt-48 pb-32 px-6 md:px-12">
+        <Link
+          href="/account/orders"
+          className="block mb-12 text-xs uppercase tracking-widest text-gray-500 hover:text-white"
+        >
+          ← Back to Orders
+        </Link>
+
+        <div className="max-w-[900px]">
+          {/* HEADER */}
+          <div className="flex justify-between items-start mb-20">
+            <div>
+              <h1 className="font-serif text-5xl font-light mb-4">
+                Order {order.id}
+              </h1>
+              <p className="text-sm text-gray-500">
+                Placed on{" "}
+                {new Date(order.date).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
+            </div>
+
+            <span
+              className={`px-5 py-2 border uppercase tracking-widest text-xs ${getStatusBadge(
+                order.status
+              )}`}
             >
-              ← Back to Orders
-            </Link>
+              {order.status}
+            </span>
           </div>
 
-          <div className="max-w-3xl">
-            <div className="flex items-start justify-between mb-8">
-              <div>
-                <h1 className="font-serif text-4xl font-light tracking-tight mb-2">Order {order.id}</h1>
-                <p className="text-muted-foreground">
-                  Placed on{" "}
-                  {new Date(order.date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
-                </p>
-              </div>
-              <span className={`px-4 py-2 rounded text-sm font-medium capitalize ${getStatusColor(order.status)}`}>
-                {order.status}
-              </span>
-            </div>
+          {/* ITEMS */}
+          <div className="border border-white/10 p-10 mb-12">
+            <h2 className="uppercase tracking-widest text-xs text-gray-400 mb-8">
+              Items
+            </h2>
 
-            {/* Order Items */}
-            <div className="border border-border rounded p-6 mb-6">
-              <h2 className="font-serif text-2xl font-light mb-6">Items</h2>
-              <div className="space-y-4">
-                {order.items.map((item, index) => (
-                  <div key={index} className="flex justify-between pb-4 border-b border-border last:border-0">
-                    <div>
-                      <p className="font-medium">{item.productName}</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Size {item.size} • Quantity {item.quantity}
-                      </p>
-                    </div>
-                    <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+            <div className="space-y-6">
+              {order.items.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between pb-6 border-b border-white/10 last:border-0"
+                >
+                  <div>
+                    <p className="uppercase tracking-widest text-sm">
+                      {item.productName}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Size {item.size} · Quantity {item.quantity}
+                    </p>
                   </div>
-                ))}
-              </div>
-
-              <div className="mt-6 pt-6 border-t border-border space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span>${order.subtotal.toFixed(2)}</span>
+                  <p>
+                    ${(item.price * item.quantity).toFixed(2)}
+                  </p>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Shipping</span>
-                  <span>${order.shipping.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between font-medium text-base pt-2">
-                  <span>Total</span>
-                  <span>${order.total.toFixed(2)}</span>
-                </div>
-              </div>
+              ))}
             </div>
 
-            {/* Shipping Address */}
-            <div className="border border-border rounded p-6">
-              <h2 className="font-serif text-2xl font-light mb-4">Shipping Address</h2>
-              <div className="text-sm text-muted-foreground space-y-1">
-                <p>{order.customerName}</p>
-                <p>{order.shippingAddress.street}</p>
-                <p>
-                  {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zip}
-                </p>
-                <p>{order.shippingAddress.country}</p>
+            <div className="border-t border-white/10 pt-8 mt-8 space-y-3 text-sm text-gray-400">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span>${order.subtotal.toFixed(2)}</span>
               </div>
+              <div className="flex justify-between">
+                <span>Shipping</span>
+                <span>${order.shipping.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-white pt-4">
+                <span>Total</span>
+                <span>${order.total.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* ADDRESS */}
+          <div className="border border-white/10 p-10">
+            <h2 className="uppercase tracking-widest text-xs text-gray-400 mb-6">
+              Shipping Address
+            </h2>
+
+            <div className="text-sm text-gray-400 leading-relaxed">
+              <p>{order.customerName}</p>
+              <p>{order.shippingAddress.street}</p>
+              <p>
+                {order.shippingAddress.city},{" "}
+                {order.shippingAddress.state}{" "}
+                {order.shippingAddress.zip}
+              </p>
+              <p>{order.shippingAddress.country}</p>
             </div>
           </div>
         </div>
       </main>
+
       <SiteFooter />
     </div>
   )

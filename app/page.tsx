@@ -209,7 +209,7 @@ export default function HomePage() {
             ref={manifestoRef}
             className="manifesto text-3xl md:text-5xl font-serif text-center leading-relaxed text-gray-300"
           >
-            {"We believe in the quiet power of silence. In a world of noise, Noir is the absence of it. We strip away the unnecessary to reveal the essential structure of the human form. This is not just clothing; this is architecture for the soul."
+            {"We believe in the quiet power of silence. In a world of noise, U.S ATELIER is the absence of it. We strip away the unnecessary to reveal the essential structure of the human form. This is not just clothing; this is architecture for the soul."
               .split(" ")
               .map((word, i) => (
                 <span key={i} className="inline-block mr-2">

@@ -9,29 +9,33 @@ import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
-export default function LoginPage() {
+export default function SignupPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
-  const { login } = useAuth()
+  const { signup } = useAuth()
   const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError("")
     setLoading(true)
 
-    const result = await login(email, password)
+    try {
+      const result = await signup(email, password)
 
-    if (result.success && result.user) {
-      router.push(result.user.role === "admin" ? "/admin" : "/account")
-    } else {
-      setError("Invalid email or password")
+      if (result?.success) {
+        router.push("/account")
+      } else {
+        setError(result?.message ?? "Unable to create account")
+      }
+    } catch (err) {
+      setError("An unexpected error occurred")
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   return (
@@ -46,11 +50,11 @@ export default function LoginPage() {
             U.S ATELIER
           </Link>
           <p className="mt-4 text-xs uppercase tracking-widest text-gray-500">
-            Welcome Back
+            Create Your Account
           </p>
         </div>
 
-        {/* Login Form */}
+        {/* Signup Form */}
         <form
           onSubmit={handleSubmit}
           className="space-y-10 border border-white/10 p-10"
@@ -75,7 +79,7 @@ export default function LoginPage() {
             </label>
             <Input
               type="password"
-              placeholder="••••••••"
+              placeholder="Create a password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -94,35 +98,17 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full bg-transparent border border-white/40 uppercase tracking-widest text-xs hover:bg-white hover:text-black transition-all duration-500"
           >
-            {loading ? "Signing In…" : "Sign In"}
+            {loading ? "Creating…" : "Create Account"}
           </Button>
         </form>
 
-        {/* Signup subtle link */}
-        <div className="mt-8 text-center text-xs tracking-widest text-gray-500">
-          New to U.S ATELIER?{" "}
-          <Link
-            href="/signup"
-            className="text-white underline underline-offset-4 hover:text-gray-300 transition-colors"
-          >
-            Create an account
-          </Link>
-        </div>
-
-        {/* Demo creds */}
-        <div className="mt-10 border border-white/5 p-6 text-xs tracking-widest text-gray-500 space-y-2">
-          <p className="uppercase text-gray-400">Demo Credentials</p>
-          <p>User — user@example.com / user123</p>
-          <p>Admin — admin@atelier.com / admin123</p>
-        </div>
-
-        {/* Back */}
+        {/* Back to login */}
         <div className="mt-10 text-center">
           <Link
-            href="/"
+            href="/login"
             className="text-xs uppercase tracking-widest text-gray-500 hover:text-white transition-colors"
           >
-            Back to Store
+            Already have an account? Sign In
           </Link>
         </div>
       </div>
